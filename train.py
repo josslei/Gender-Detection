@@ -5,8 +5,8 @@ import torchvision.transforms as transforms
 from cnn import cnn
 
 N_CLASSES = 2   # male & female
-BATCH_SIZE = 10
-LEARNING_RATE = 0.01
+BATCH_SIZE = 20
+LEARNING_RATE = 0.001
 EPOCH = 100
 
 # train
