@@ -67,5 +67,5 @@ class cnn(tnn.Module):
         x = self.layer13(x)
         x = self.layer14(x)
         x = self.layer15(x)
-        x = tnn.Sigmoid()(self.layer16(x))
+        x = self.layer16(x)
         return x
