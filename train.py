@@ -7,19 +7,31 @@ from cnn import cnn
 N_CLASSES = 2   # male & female
 BATCH_SIZE = 20
 LEARNING_RATE = 0.001
-EPOCH = 100
+EPOCH = 45
 
 # train
 if __name__ == "__main__":
-    transform = transforms.Compose([
+    transform_train = transforms.Compose([
+        transforms.Resize(100),
+        # data enhancement
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(360),
+        transforms.RandomAffine(360),
+        transforms.ColorJitter(),
+        #
+        transforms.ToTensor(),
+        transforms.Normalize(mean = [ 0.485, 0.456, 0.406 ],
+                             std  = [ 0.229, 0.224, 0.225 ])
+        ])
+    transform_test = transforms.Compose([
         transforms.Resize(100),
         transforms.ToTensor(),
         transforms.Normalize(mean = [ 0.485, 0.456, 0.406 ],
                              std  = [ 0.229, 0.224, 0.225 ])
         ])
     
-    trainData = datasets.ImageFolder('~/data/gender/train/', transform)
-    testData = datasets.ImageFolder('~/data/gender/test', transform)
+    trainData = datasets.ImageFolder('~/data/gender/train/', transform_train)
+    testData = datasets.ImageFolder('~/data/gender/test', transform_test)
     trainLoader = torch.utils.data.DataLoader(dataset=trainData, batch_size=BATCH_SIZE, shuffle=True)
     testLoader = torch.utils.data.DataLoader(dataset=testData, batch_size=BATCH_SIZE, shuffle=False)
 
@@ -52,6 +64,9 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
         scheduler.step(avg_loss)
+        # save module
+        torch.save(model.state_dict(), 'model.state_dict.pt')
+        torch.save(model, 'model.pt')
 
     # Test the model
     model.eval()
