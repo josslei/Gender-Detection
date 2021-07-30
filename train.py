@@ -12,7 +12,7 @@ EPOCH = 45
 # train
 if __name__ == "__main__":
     transform_train = transforms.Compose([
-        transforms.Resize(100),
+        transforms.Resize(200),
         # data enhancement
         transforms.RandomHorizontalFlip(),
         transforms.RandomRotation(360),
@@ -24,7 +24,7 @@ if __name__ == "__main__":
                              std  = [ 0.229, 0.224, 0.225 ])
         ])
     transform_test = transforms.Compose([
-        transforms.Resize(100),
+        transforms.Resize(200),
         transforms.ToTensor(),
         transforms.Normalize(mean = [ 0.485, 0.456, 0.406 ],
                              std  = [ 0.229, 0.224, 0.225 ])
