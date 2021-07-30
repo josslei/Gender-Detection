@@ -1,3 +1,7 @@
+# model file
+# July 30, 2021
+*.pt
+
 # editor cache
 # July 29, 2021
 .vscode/
