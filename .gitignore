@@ -1,6 +1,7 @@
 # model file
 # July 30, 2021
 *.pt
+*.onnx
 
 # editor cache
 # July 29, 2021
