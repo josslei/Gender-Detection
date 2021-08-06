@@ -2,28 +2,42 @@ import torch
 import torch.nn as tnn
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-import sys
-#
-from train import BATCH_SIZE
-from train import LEARNING_RATE
+from cnn import cnn
+from utils import export_sample_images
+from pytorchtools import EarlyStopping
 
-if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print("[1] Please specify the path of model!")
-        print("[2] Please specify how many epochs to train!")
-        exit(-1)
+N_CLASSES = 2   # male & female
+BATCH_SIZE = 10
+LEARNING_RATE = 0.00001
+EPOCH = 160
+PATIENCE = 40
+
+# train
+if __name__ == "__main__":
+    # use gpu0
+    import os
+    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
     transform_train = transforms.Compose([
-        transforms.Resize(200),
+        transforms.Resize((200, 200)),
+        # data enhancement
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(),
+        transforms.ColorJitter(),
+        transforms.RandomAffine(degrees   = 360,            # rotating
+                                translate = (0.35, 0.35),   # translating
+                                scale     = (0.8, 1.7)),    # scaling
+        #
         transforms.ToTensor(),
-        transforms.Normalize(mean = [ 0.485, 0.456, 0.406 ],
-                             std  = [ 0.229, 0.224, 0.225 ])
+        transforms.Normalize(mean = [ 0.556, 0.445, 0.396 ],
+                             std  = [ 0.234, 0.205, 0.185 ])
         ])
+
     transform_test = transforms.Compose([
-        transforms.Resize(200),
+        transforms.Resize((200, 200)),
         transforms.ToTensor(),
-        transforms.Normalize(mean = [ 0.485, 0.456, 0.406 ],
-                             std  = [ 0.229, 0.224, 0.225 ])
+        transforms.Normalize(mean = [ 0.556, 0.445, 0.396 ],
+                             std  = [ 0.234, 0.205, 0.185 ])
         ])
     
     trainData = datasets.ImageFolder('~/data/gender/train/', transform_train)
@@ -31,19 +45,27 @@ if __name__ == '__main__':
     trainLoader = torch.utils.data.DataLoader(dataset=trainData, batch_size=BATCH_SIZE, shuffle=True)
     testLoader = torch.utils.data.DataLoader(dataset=testData, batch_size=BATCH_SIZE, shuffle=False)
 
-    EPOCH = int(sys.argv[2])
-    model = torch.load(sys.argv[1])
+    export_sample_images(10, './samples/train/', trainData)
+    export_sample_images(10, './samples/test/', testData)
+
+    model = torch.load('model.pt')
     model.cuda()
 
     # Cost function, optimizer & scheduler
     cost = tnn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=(LEARNING_RATE / 100))  # avoid a large lr
+    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
 
     '''
     Training
     '''
+    train_losses = []
+    test_losses  = []
+    acc_list     = []
+    # early stop
+    early_stop = EarlyStopping(patience=PATIENCE, verbose=True)
     for epoch in range(EPOCH):
+        # training
         model.train()
         avg_loss = 0
         cnt = 0
@@ -57,27 +79,75 @@ if __name__ == '__main__':
             loss = cost(outputs, labels)
             avg_loss += loss.data
             cnt += 1
-            print("[E: %d] \tloss: %f  \tavg_loss: %f" % (epoch, loss.data, avg_loss/cnt))
+            print("[E: %d] \tloss: %f  \tavg_loss: %f" % (epoch, loss.data, avg_loss / cnt))
             loss.backward()
             optimizer.step()
         scheduler.step(avg_loss)
-        # save module
-        torch.save(model.state_dict(), 'model.state_dict.pt')
-        torch.save(model, 'model.pt')
+        train_losses += [avg_loss / cnt]
 
-    # Test the model
+        # testing
+        model.eval()
+        valid_losses = []
+        # acc
+        correct = 0
+        total = 0
+        # loss
+        avg_loss = 0
+        cnt = 0
+        for images, labels in testLoader:
+            images = images.cuda()
+            labels = labels.cuda()
+
+            outputs = model(images)
+            # acc
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted.cpu() == labels.cpu()).sum()
+            # loss
+            loss = cost(outputs, labels)
+            valid_losses += [loss.item()]
+            avg_loss += loss.data
+            cnt += 1
+            print("Test losses: %f" % (loss.data))
+
+        # acc
+        acc_list += [correct / total * 100]
+        # loss
+        test_losses += [avg_loss / cnt]
+        valid_loss = avg_loss / cnt
+        # early stop
+        early_stop(valid_loss, model)
+        # save the model
+        if 0 == epoch % 10:
+            torch.save(model, 'model.pt')
+            torch.save(model.state_dict(), 'model.state_dict.pt')
+        # early stop
+        if early_stop.early_stop:
+            print("Early stopping at epoch: " + str(epoch))
+            break
+
+    # save output data... (loss values...)
+    with open('train-loss', 'w') as fp:
+        for i in train_losses:
+            fp.write(str(i) + '\n')
+    with open('test-loss', 'w') as fp:
+        for i in test_losses:
+            fp.write(str(i) + '\n')
+
+    # Final testing
     model.eval()
     correct = 0
     total = 0
 
     for images, labels in testLoader:
         images = images.cuda()
+        labels = labels.cuda()
         outputs = model.forward(images)
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
-        correct += (predicted.cpu() == labels).sum()
+        correct += (predicted.cpu() == labels.cpu()).sum()
         print(predicted, labels, correct, total)
-        print("avg acc: %f" % (100* correct/total))
+        print("avg acc: %f" % (100 * correct/total))
 
     # Save the Trained Model
     torch.save(model.state_dict(), 'model.state_dict.pt')
