@@ -1,3 +1,41 @@
+/*
+By downloading, copying, installing or using the software you agree to this license.
+If you do not agree to this license, do not download, install,
+copy or use the software.
+
+                  License Agreement For libfacedetection
+                     (3-clause BSD License)
+
+Copyright (c) 2021, Joss Lei, All rights reserved.
+josslei@163.com
+josslei.0@outlook.com
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
 #include <iostream>
@@ -44,25 +82,3 @@ int main(int argc, char **argv)
     }
     return 0;
 }
-
-/*
-int main()
-{
-    cv::Mat frame;
-    // camera
-    cv::VideoCapture cap(0);
-    cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
-    while (cv::waitKey(30) != 27) // esc
-    {
-        cap >> frame;
-        cv::Mat cropped = cv::dnn::blobFromImage(frame, (double)(1.0 / 255.0), cv::Size(200, 200), cv::Scalar(0.485 * 255, 0.456 * 255, 0.406 * 255));
-        cv::imshow("Null", frame);
-        cout << cropped.step1(0) << ' ' <<
-                cropped.step1(1) << ' ' <<
-                cropped.step1(2) << ' ' <<
-                cropped.step1(3) << endl;
-        cout << cropped.ptr<float>(0, 2, 199)[199] << endl;
-    }
-}
-*/
