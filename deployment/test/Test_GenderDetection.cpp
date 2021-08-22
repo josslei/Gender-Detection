@@ -74,6 +74,9 @@ int main(int argc, char **argv)
         cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
         while (waitKey(2) != 27)   // esc
         {
+            TickMeter cvtm;
+            cvtm.start();
+            // start
             cap >> frame;
             cv::flip(frame, frame, 1);
             // send into libfacedetection
@@ -91,7 +94,7 @@ int main(int argc, char **argv)
               int h = p[4] * RESIZE_SCALE;
               cm_input = frame(Rect(x, y, w, h));
               // predict
-              double time_used = predict(cm_input, cm_result);
+              predict(cm_input, cm_result);
               if (cm_result.ptr<float>(0)[0] >= 0.55)       cm_str_result = labels[0];
               else if (cm_result.ptr<float>(0)[1] >= 0.55)  cm_str_result = labels[1];
               else                                          cm_str_result = "Could not identify!";
@@ -105,8 +108,12 @@ int main(int argc, char **argv)
               printf("face %d: confidence=%d, gender=%s, [%d, %d, %d, %d] [%f, %f] (%d,%d) (%d,%d) (%d,%d) (%d,%d) (%d,%d)\n", 
                       i, confidence, cm_str_result.c_str(), x, y, w, h, cm_result.ptr<float>(0)[0], cm_result.ptr<float>(0)[1],
                       p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13],p[14]);
+
             }
             imshow("Cap", frame);
+            // end
+            cvtm.stop();
+            cout << "Total time = " << cvtm.getTimeMilli() << "ms\n";
         }
     }
     catch(const std::exception& e)
