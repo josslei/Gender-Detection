@@ -1,6 +1,8 @@
-# bin
+# binaries
 # Aug 9, 2021
-*.out
+deployment/test/Test_ClassifierModule
+deployment/test/Test_GenderDetection
+deployment/test/Test_libfacedetection
 *.o
 
 # model file
