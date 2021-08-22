@@ -59,13 +59,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif // OPENCV_CAM
 
 /* Constants */
-constexpr double MEAN[3] = { 0.485 * 255.0, // B
-                             0.456 * 255.0, // G
-                             0.406 * 255.0  // R
-                           }; // Mean
-constexpr double  STD[3] = { 0.229 * 255.0, // B ~~ Model of Training No.4 is using the value from
-                             0.224 * 255.0, // G ~~ ImageNet (forgot to change), but from Training
-                             0.225 * 255.0  // R ~~ No.5.0, these values are based on the dataset.
+constexpr double MEAN[3] = { 0.556 * 255.0,  // B
+                             0.445 * 255.0,  // G
+                             0.396 * 255.0   // R
+                           };
+constexpr double  STD[3] = { 0.234 * 255.0,  // B
+                             0.205 * 255.0,  // G
+                             0.185 * 255.0   // R
                            }; // STD
 constexpr int INPUT_SIZE[4] = { 1, 3, 200, 200 };
 
